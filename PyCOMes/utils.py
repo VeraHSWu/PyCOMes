@@ -27,13 +27,15 @@ def num(s):
 def get_extension(file_name):
 
     extension = os.path.splitext(file_name)[1][1:]
-    known_extension = {'text': ['txt', 'csv'], 'pickle': ['pkl', 'pickle', 'p'], 'numpy': ['npy']}
+    known_extension = {'text': ['txt', 'csv'], 'pickle': ['pkl', 'pickle', 'p'], 'numpy': ['npy'], 'vti': ['vti']}
     if extension in known_extension['text']:
         return FileType.TXT
     elif extension in known_extension['pickle']:
         return FileType.PICKLE
     elif extension in known_extension['numpy']:
         return FileType.NPY
+    elif extension in known_extension['vti']:
+        return FileType.VTI
     else:
         raise TypeError(f"file type not recognized, known extensions are {known_extension}.")
 

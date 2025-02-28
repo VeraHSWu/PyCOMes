@@ -2,6 +2,7 @@ from .utils import *
 from .interpolation import *
 import pandas as pd
 import pickle
+import pyvista as pv
 
 
 class FieldNotFound(Exception):
@@ -224,8 +225,42 @@ class Field:
         
     def load_vti(self, file_name=None):
       
-      print("Not implemented. Bye bye.")
-      return -1
+      if not file_name is None:
+        self.file_name = file_name
+
+      data = pv.read(file_name)
+
+      dims = data.dimensions
+
+      if 1 in dims:
+        raise("This is not a 3-dimensional map")
+
+      X = data.x[:dims[0]].astype(float)*1000 # mm
+      Y = data.y[:dims[0]*dims[1]:dims[0]].astype(float)*1000 # mm
+      Z = data.z[::dims[0]*dims[1]].astype(float)*1000 # mm
+
+      U = data.get_array('electric field').T[0].astype(float)/100 # electric field, x-component # V/cm
+      V = data.get_array('electric field').T[1].astype(float)/100 # electric field, y-component # V/cm
+      W = data.get_array('electric field').T[2].astype(float)/100# electric field, z-component # V/cm
+
+      # implemented only for 3D file map
+      self.params = None
+      self.vars = {'x': 'mm', 'y': 'mm', 'z': 'mm',
+                   'Ex': 'V/cm', 'Ey': 'V/cm', 'Ez': 'V/cm'}
+      self.dimension = 3
+      self.head = ''
+      if(hasattr(self, "field")):
+        self.field['Ex'] = U
+        self.field['Ey'] = V
+        self.field['Ez'] = W
+      else:
+        self.field = pd.DataFrame({'Ex': U, 
+                                   'Ey': V,
+                                   'Ez': W})
+      
+      self.make_xyz(X,Y,Z)
+    
+      return
 
     def load_file(self, file_name=None):
 
